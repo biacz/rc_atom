@@ -46,3 +46,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 secrets.h
+.pioenvs
+.piolibdeps
+.clang_complete
+.gcc-flags.json

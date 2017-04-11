@@ -1,9 +1,8 @@
 #include <Arduino.h>
-
-//include all libraries
+#include <ArduinoOTA.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
-#include <ESP8266httpUpdate.h>
+#include <WiFiUdp.h>
 #include <PubSubClient.h>
 #include <RCSwitch.h>
 #include <fauxmoESP.h>
@@ -13,7 +12,6 @@
 #define MQTT_VERSION                                MQTT_VERSION_3_1_1
 #define IRB 14
 #define RCPIN 2
-#define OTA_URL                                     "http://www.beutler.nl/rc_update.bin"
 
 const PROGMEM char* MQTT_CLIENT_ID =                "livingroom_rc";
 const PROGMEM char* MQTT_SENSOR_TOPIC =             "/house/livingroom/sensor_dht";
@@ -42,8 +40,9 @@ void callFauxmo(unsigned char device_id, const char * device_name, bool state) {
   Serial.println("");
   Serial.printf("[Fauxmo] Device #%d (%s) state: %s\n", device_id, device_name, state ? "1" : "0");
   client.publish(MQTT_LIGHT_STATE_TOPIC[device_id], state ? "1" : "0", true);
-  int hc_int = housecode;
-  int sc_int = socketcodes[device_id];
+
+  int hc_int = atol(housecode);
+  int sc_int = atol(socketcodes[device_id]);
 
   if (state) {
     mySwitch.switchOn(hc_int, sc_int);
@@ -53,7 +52,7 @@ void callFauxmo(unsigned char device_id, const char * device_name, bool state) {
   }
 }
 
-void callback(char* p_topic, byte* p_payload, unsigned int p_length) { //handle mqtt callbacks
+void callback_mqtt(char* p_topic, byte* p_payload, unsigned int p_length) { //handle mqtt callbacks
   String payload;
   for (uint8_t i = 0; i < p_length; i++) { //concatenate payload
     payload.concat((char)p_payload[i]);
@@ -71,38 +70,20 @@ void callback(char* p_topic, byte* p_payload, unsigned int p_length) { //handle 
   }
 }
 
-void reconnect() {
+void reconnect_mqtt() {
   while (!client.connected()) { //loop until we're reconnected
-    Serial.println("INFO: Attempting MQTT connection...");
+    Serial.println("[MQTT] INFO: Attempting connection...");
     if (client.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD)) {
-      Serial.println("INFO: connected");
+      Serial.println("[MQTT] INFO: connected");
       for (int i = 0; i < 3; i++) {
         client.subscribe(MQTT_LIGHT_COMMAND_TOPIC[i]); //subscribe to all light topics
       }
     } else {
-      Serial.print("ERROR: failed, rc=");
+      Serial.print("[MQTT] ERROR: failed, rc=");
       Serial.print(client.state());
-      Serial.println("DEBUG: try again in 5 seconds");
+      Serial.println("[MQTT] DEBUG: try again in 5 seconds");
       delay(5000); //wait 5 seconds before retrying
     }
-  }
-}
-
-void initOTA() {
-  t_httpUpdate_return ret = ESPhttpUpdate.update(OTA_URL);
-  switch (ret) {
-    case HTTP_UPDATE_FAILED:
-      Serial.print("HTTP_UPDATE_FAILD Error (%d): %s ");
-      Serial.println(ESPhttpUpdate.getLastErrorString().c_str());
-      break;
-
-    case HTTP_UPDATE_NO_UPDATES:
-      Serial.println("HTTP_UPDATE_NO_UPDATES");
-      break;
-
-    case HTTP_UPDATE_OK:
-      Serial.println("HTTP_UPDATE_OK");
-      break;
   }
 }
 
@@ -150,18 +131,47 @@ void setup() {
   Serial.begin(115200); //init the serial
   mySwitch.enableTransmit(RCPIN); //enable transmit on RCPIN
   setupWifi();
-  initOTA();
   setupFauxmo();
   client.setServer(MQTT_SERVER_IP, MQTT_SERVER_PORT);
-  client.setCallback(callback);
+  client.setCallback(callback_mqtt);
+
+  ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH)
+      type = "sketch";
+    else // U_SPIFFS
+      type = "filesystem";
+
+    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+    Serial.println("Start updating " + type);
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+  ArduinoOTA.begin();
+  Serial.println("Ready");
+  Serial.print("IP addressssssssssss: ");
+  Serial.println(WiFi.localIP());
 }
 
 void loop() {
   unsigned long now = millis();
   if (!client.connected()) {
-    reconnect();
+    reconnect_mqtt();
   }
   client.loop();
   fauxmo.handle();
   movement(now);
+  ArduinoOTA.handle();
 }
