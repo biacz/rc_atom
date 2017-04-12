@@ -57,9 +57,9 @@ void mqttCallback(char* p_topic, byte* p_payload, unsigned int p_length) { //han
 
   for (int i = 0; i < 3; i++) {
     if (String(MQTT_LIGHT_COMMAND_TOPIC[i]).equals(String(p_topic))) {
-      Serial.print("[MQTT] Topic: ");
+      Serial.print("[MQTT] TOPIC: ");
       Serial.println(p_topic);
-      Serial.print("[MQTT] Payload:");
+      Serial.print("[MQTT] PAYLOAD:");
       Serial.println(payload);
       fauxmoCallback(i, p_topic, payload != "0");
     }
@@ -73,8 +73,7 @@ void mqttReconnect() {
       Serial.println("[MQTT] INFO: connected");
       for (int i = 0; i < 3; i++) {
         mqttClient.subscribe(MQTT_LIGHT_COMMAND_TOPIC[i]); //subscribe to all light topics
-        Serial.print("[MQTT] INFO: Subscribed to []");
-        Serial.println(MQTT_LIGHT_COMMAND_TOPIC[i]);
+        Serial.printf("[MQTT] INFO: subscribing to %s\n", MQTT_LIGHT_COMMAND_TOPIC[i]);
       }
     } else {
       Serial.print("[MQTT] ERROR: failed, rc=");
