@@ -158,6 +158,7 @@ void setup() {
 }
 
 void loop() {
+  yield();
   unsigned long now = millis();
   if (!client.connected()) {
     reconnect_mqtt();
