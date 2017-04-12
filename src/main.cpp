@@ -30,7 +30,7 @@ int lastState = LOW;
 
 //initialize classes
 WiFiClient wifiClient;
-PubSubClient mqttclient(wifiClient);
+PubSubClient mqttClient(wifiClient);
 RCSwitch mySwitch = RCSwitch();
 fauxmoESP fauxmo;
 
@@ -104,7 +104,7 @@ void fauxmoSetup() {
   fauxmo.addDevice("Licht eins");
   fauxmo.addDevice("Licht zwei");
   fauxmo.addDevice("Licht drei");
-  fauxmo.onMessage(callFauxmo);
+  fauxmo.onMessage(fauxmoCallback);
 }
 
 void movement(unsigned long now) {
@@ -161,9 +161,9 @@ void loop() {
   yield();
   unsigned long now = millis();
   if (!mqttClient.connected()) {
-    reconnect();
+    mqtt_reconnect();
   }
-  client.loop();
+  mqttClient.loop();
   fauxmo.handle();
   movement(now);
   ArduinoOTA.handle();
