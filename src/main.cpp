@@ -12,7 +12,7 @@
 #define IRB 14
 #define RCPIN 2
 
-const PROGMEM char* MQTT_CLIENT_ID =                "livingroom_rc";
+const PROGMEM char* mqttClient_ID =                "livingroom_rc";
 const PROGMEM char* MQTT_SENSOR_TOPIC =             "/house/livingroom/sensor_dht";
 const PROGMEM char* MQTT_LIGHT_STATE_TOPIC[] = {    "/house/livingroom/light_left/status", "/house/livingroom/light_right/status", "/house/livingroom/light_center/status" };
 const PROGMEM char* MQTT_LIGHT_COMMAND_TOPIC[] = {  "/house/livingroom/light_left/switch", "/house/livingroom/light_right/switch", "/house/livingroom/light_center/switch" };
@@ -30,14 +30,14 @@ int lastState = LOW;
 
 //initialize classes
 WiFiClient wifiClient;
-PubSubClient client(wifiClient);
+PubSubClient mqttclient(wifiClient);
 RCSwitch mySwitch = RCSwitch();
 fauxmoESP fauxmo;
 
-void callFauxmo(unsigned char device_id, const char * device_name, bool state) {
+void fauxmoCallback(unsigned char device_id, const char * device_name, bool state) {
   Serial.println("");
   Serial.printf("[FAUXMO] Device #%d (%s) state: %s\n", device_id, device_name, state ? "1" : "0");
-  client.publish(MQTT_LIGHT_STATE_TOPIC[device_id], state ? "1" : "0", true);
+  mqttClient.publish(MQTT_LIGHT_STATE_TOPIC[device_id], state ? "1" : "0", true);
 
   int hc_int = atol(housecode);
   int sc_int = atol(socketcodes[device_id]);
@@ -50,7 +50,7 @@ void callFauxmo(unsigned char device_id, const char * device_name, bool state) {
   }
 }
 
-void callback_mqtt(char* p_topic, byte* p_payload, unsigned int p_length) { //handle mqtt callbacks
+void mqttCallback(char* p_topic, byte* p_payload, unsigned int p_length) { //handle mqtt callbacks
   String payload;
   for (uint8_t i = 0; i < p_length; i++) { //concatenate payload
     payload.concat((char)p_payload[i]);
@@ -63,29 +63,29 @@ void callback_mqtt(char* p_topic, byte* p_payload, unsigned int p_length) { //ha
       Serial.println(p_topic);
       Serial.print("[MQTT] Payload:");
       Serial.println(payload);
-      callFauxmo(i, p_topic, payload != "0");
+      fauxmoCallback(i, p_topic, payload != "0");
     }
   }
 }
 
-void reconnect_mqtt() {
-  while (!client.connected()) { //loop until we're reconnected
+void mqtt_reconnect() {
+  while (!mqttClient.connected()) { //loop until we're reconnected
     Serial.println("[MQTT] INFO: Attempting connection...");
-    if (client.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD)) {
+    if (mqttClient.connect(mqttClient_ID, MQTT_USER, MQTT_PASSWORD)) {
       Serial.println("[MQTT] INFO: connected");
       for (int i = 0; i < 3; i++) {
-        client.subscribe(MQTT_LIGHT_COMMAND_TOPIC[i]); //subscribe to all light topics
+        mqttClient.subscribe(MQTT_LIGHT_COMMAND_TOPIC[i]); //subscribe to all light topics
       }
     } else {
       Serial.print("[MQTT] ERROR: failed, rc=");
-      Serial.print(client.state());
+      Serial.print(mqttClient.state());
       Serial.println("[MQTT] DEBUG: try again in 5 seconds");
       delay(5000); //wait 5 seconds before retrying
     }
   }
 }
 
-void setupWifi() {
+void wifiSetup() {
   Serial.print("[WIFI] INFO: Connecting to ");
   Serial.println(WIFI_SSID);
   WiFi.mode(WIFI_STA);
@@ -100,7 +100,7 @@ void setupWifi() {
   Serial.println(WiFi.localIP());
 }
 
-void setupFauxmo() {
+void fauxmoSetup() {
   fauxmo.addDevice("Licht eins");
   fauxmo.addDevice("Licht zwei");
   fauxmo.addDevice("Licht drei");
@@ -111,7 +111,7 @@ void movement(unsigned long now) {
   if (digitalRead(IRB) == HIGH) {
     if (now - last_millis >= wait) {
       last_millis = now;
-      client.publish(MQTT_MOVEMENT_STATE_TOPIC, "ON", true); //publish the state to mqtt
+      mqttClient.publish(MQTT_MOVEMENT_STATE_TOPIC, "ON", true); //publish the state to mqtt
       Serial.println("INFO: Movement detected!");
     }
     lastState = HIGH;
@@ -119,7 +119,7 @@ void movement(unsigned long now) {
   if (digitalRead(IRB) == LOW) {
     if (now - last_millis >= wait_off) {
       last_millis = now;
-      client.publish(MQTT_MOVEMENT_STATE_TOPIC, "OFF", true); //publish the state to mqtt
+      mqttClient.publish(MQTT_MOVEMENT_STATE_TOPIC, "OFF", true); //publish the state to mqtt
       Serial.println("INFO: No more movement detected!");
     }
     lastState = LOW;
@@ -150,18 +150,18 @@ void setup() {
   ArduinoOTA.begin();
 
   mySwitch.enableTransmit(RCPIN); //enable transmit on RCPIN
-  setupWifi();
-  setupFauxmo();
-  client.setServer(MQTT_SERVER_IP, MQTT_SERVER_PORT);
-  client.setCallback(callback_mqtt);
+  wifiSetup();
+  fauxmoSetup();
+  mqttClient.setServer(MQTT_SERVER_IP, MQTT_SERVER_PORT);
+  mqttClient.setCallback(mqttCallback);
 
 }
 
 void loop() {
   yield();
   unsigned long now = millis();
-  if (!client.connected()) {
-    reconnect_mqtt();
+  if (!mqttClient.connected()) {
+    reconnect();
   }
   client.loop();
   fauxmo.handle();
