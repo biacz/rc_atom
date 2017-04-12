@@ -35,7 +35,6 @@ RCSwitch mySwitch = RCSwitch();
 fauxmoESP fauxmo;
 
 void fauxmoCallback(unsigned char device_id, const char * device_name, bool state) {
-  Serial.println("");
   Serial.printf("[FAUXMO] Device #%d (%s) state: %s\n", device_id, device_name, state ? "1" : "0");
   mqttClient.publish(MQTT_LIGHT_STATE_TOPIC[device_id], state ? "1" : "0", true);
 
@@ -58,7 +57,6 @@ void mqttCallback(char* p_topic, byte* p_payload, unsigned int p_length) { //han
 
   for (int i = 0; i < 3; i++) {
     if (String(MQTT_LIGHT_COMMAND_TOPIC[i]).equals(String(p_topic))) {
-      Serial.println("");
       Serial.print("[MQTT] Topic: ");
       Serial.println(p_topic);
       Serial.print("[MQTT] Payload:");
@@ -75,6 +73,8 @@ void mqttReconnect() {
       Serial.println("[MQTT] INFO: connected");
       for (int i = 0; i < 3; i++) {
         mqttClient.subscribe(MQTT_LIGHT_COMMAND_TOPIC[i]); //subscribe to all light topics
+        Serial.print("[MQTT] INFO: Subscribed to []");
+        Serial.println(MQTT_LIGHT_COMMAND_TOPIC[i]);
       }
     } else {
       Serial.print("[MQTT] ERROR: failed, rc=");
