@@ -68,7 +68,7 @@ void mqttCallback(char* p_topic, byte* p_payload, unsigned int p_length) { //han
   }
 }
 
-void mqtt_reconnect() {
+void mqttReconnect() {
   while (!mqttClient.connected()) { //loop until we're reconnected
     Serial.println("[MQTT] INFO: Attempting connection...");
     if (mqttClient.connect(mqttClient_ID, MQTT_USER, MQTT_PASSWORD)) {
@@ -90,11 +90,11 @@ void wifiSetup() {
   Serial.println(WIFI_SSID);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD); //connect to wifi
-  Serial.println();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
+  Serial.println("");
   Serial.println("[WIFI] INFO: WiFi connected");
   Serial.println("[WIFI] INFO: IP address: ");
   Serial.println(WiFi.localIP());
@@ -161,7 +161,7 @@ void loop() {
   yield();
   unsigned long now = millis();
   if (!mqttClient.connected()) {
-    mqtt_reconnect();
+    mqttReconnect();
   }
   mqttClient.loop();
   fauxmo.handle();
