@@ -8,7 +8,6 @@
 #include <fauxmoESP.h>
 #include <secrets.h>
 
-//basic defines
 #define MQTT_VERSION                                MQTT_VERSION_3_1_1
 #define IRB 14
 #define RCPIN 2
@@ -19,7 +18,6 @@ const PROGMEM char* MQTT_LIGHT_STATE_TOPIC[] = {    "/house/livingroom/light_lef
 const PROGMEM char* MQTT_LIGHT_COMMAND_TOPIC[] = {  "/house/livingroom/light_left/switch", "/house/livingroom/light_right/switch", "/house/livingroom/light_center/switch" };
 const PROGMEM char* MQTT_MOVEMENT_STATE_TOPIC =     "/house/livingroom/movement/status";
 
-//variables for rc-switch functionality
 const char* housecode =                             "11010"; //first 5 dip switches on rc switches
 const char* socketcodes[] = {                       "00010", "00001", "10000" }; //last 5 dip switches on rc switches
 
@@ -38,7 +36,7 @@ fauxmoESP fauxmo;
 
 void callFauxmo(unsigned char device_id, const char * device_name, bool state) {
   Serial.println("");
-  Serial.printf("[Fauxmo] Device #%d (%s) state: %s\n", device_id, device_name, state ? "1" : "0");
+  Serial.printf("[FAUXMO] Device #%d (%s) state: %s\n", device_id, device_name, state ? "1" : "0");
   client.publish(MQTT_LIGHT_STATE_TOPIC[device_id], state ? "1" : "0", true);
 
   int hc_int = atol(housecode);
@@ -88,16 +86,17 @@ void reconnect_mqtt() {
 }
 
 void setupWifi() {
-  Serial.print("INFO: Connecting to ");
-  WiFi.mode(WIFI_STA);
+  Serial.print("[WIFI] INFO: Connecting to ");
   Serial.println(WIFI_SSID);
+  WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD); //connect to wifi
+  Serial.println();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("INFO: WiFi connected");
-  Serial.println("INFO: IP address: ");
+  Serial.println("[WIFI] INFO: WiFi connected");
+  Serial.println("[WIFI] INFO: IP address: ");
   Serial.println(WiFi.localIP());
 }
 
@@ -128,21 +127,10 @@ void movement(unsigned long now) {
 }
 
 void setup() {
-  Serial.begin(115200); //init the serial
-  mySwitch.enableTransmit(RCPIN); //enable transmit on RCPIN
-  setupWifi();
-  setupFauxmo();
-  client.setServer(MQTT_SERVER_IP, MQTT_SERVER_PORT);
-  client.setCallback(callback_mqtt);
-
+  Serial.begin(115200);
   ArduinoOTA.onStart([]() {
     String type;
-    if (ArduinoOTA.getCommand() == U_FLASH)
-      type = "sketch";
-    else // U_SPIFFS
-      type = "filesystem";
-
-    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+    type = "sketch";
     Serial.println("Start updating " + type);
   });
   ArduinoOTA.onEnd([]() {
@@ -160,9 +148,13 @@ void setup() {
     else if (error == OTA_END_ERROR) Serial.println("End Failed");
   });
   ArduinoOTA.begin();
-  Serial.println("Ready");
-  Serial.print("IP addressssssssssss: ");
-  Serial.println(WiFi.localIP());
+
+  mySwitch.enableTransmit(RCPIN); //enable transmit on RCPIN
+  setupWifi();
+  setupFauxmo();
+  client.setServer(MQTT_SERVER_IP, MQTT_SERVER_PORT);
+  client.setCallback(callback_mqtt);
+
 }
 
 void loop() {
