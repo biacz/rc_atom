@@ -79,7 +79,7 @@ void mqttReconnect() {
       Serial.print("[MQTT] ERROR: failed, rc=");
       Serial.print(mqttClient.state());
       Serial.println("[MQTT] DEBUG: try again in 5 seconds");
-      delay(5000); //wait 5 seconds before retrying
+      delay(2000); //wait 5 seconds before retrying
     }
   }
 }
@@ -90,7 +90,7 @@ void wifiSetup() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD); //connect to wifi
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+    delay(1000);
     Serial.print(".");
   }
   Serial.println("");
@@ -111,7 +111,7 @@ void movement(unsigned long now) {
     if (now - last_millis >= wait) {
       last_millis = now;
       mqttClient.publish(MQTT_MOVEMENT_STATE_TOPIC, "ON", true); //publish the state to mqtt
-      Serial.println("INFO: Movement detected!");
+      Serial.println("[SENSOR] INFO: Movement detected!");
     }
     lastState = HIGH;
   }
@@ -119,7 +119,7 @@ void movement(unsigned long now) {
     if (now - last_millis >= wait_off) {
       last_millis = now;
       mqttClient.publish(MQTT_MOVEMENT_STATE_TOPIC, "OFF", true); //publish the state to mqtt
-      Serial.println("INFO: No more movement detected!");
+      Serial.println("[SENSOR] INFO: No more movement detected!");
     }
     lastState = LOW;
   }
