@@ -19,8 +19,8 @@ PubSubClient mqttClient(wifiClient);
 
 int IRB =                                           14;
 int RCPIN =                                         2;
-int housecode =                                     11010; //first 5 dip switches on rc switches
-int socketcodes[] = {                               00010, 00001, 10000 }; //last 5 dip switches on rc switches
+char* housecode =                                   "11010"; //first 5 dip switches on rc switches
+char* socketcodes[] = {                             "00010", "00001", "10000" }; //last 5 dip switches on rc switches
 unsigned long wait = 30000;
 unsigned long wait_off = 120000;
 unsigned long now = millis();
@@ -73,8 +73,6 @@ void mqttCallback(char* p_topic, byte* p_payload, unsigned int p_length) { //han
       Serial.println(p_topic);
       Serial.print("[MQTT] PAYLOAD:");
       Serial.println(payload);
-
-      //int socketcode = atol(socketcodes[i]);
 
       if (payload=="ON") {
         mySwitch.switchOn(housecode, socketcodes[i]);
