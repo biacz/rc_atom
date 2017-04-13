@@ -133,6 +133,7 @@ void setup() {
 
 void loop() {
   yield();
+  unsigned long now = millis();
   ArduinoOTA.handle();
   if (!mqttClient.connected()) {
     mqttReconnect();
