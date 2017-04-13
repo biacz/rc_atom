@@ -2,36 +2,16 @@
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lwip\include
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\cores\esp8266
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\variants\nodemcu
--IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266WiFi\src
--IC:\Users\Administrator\.platformio\lib\ESPAsyncTCP_ID305\src
--IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\Hash\src
--IC:\Users\Administrator\.platformio\lib\ESPAsyncWebServer_ID306\src
--IC:\Users\Administrator\.platformio\lib\FauxmoESP_ID1303\src
--IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266mDNS
--IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\.piolibdeps\PubSubClient_ID89\src
--IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ArduinoOTA
 -IC:\Users\Administrator\.platformio\lib\RCSwitch_ID246
+-IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266WiFi\src
+-IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266mDNS
+-IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\ArduinoOTA
+-IC:\Users\Administrator\.platformio\lib\PubSubClient_ID89\src
 -IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\src
+-IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\ArduinoOTA
 -IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\secrets\src
--IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\.piolibdeps\PubSubClient_ID89\src
--IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\.piolibdeps\PubSubClient_ID89\src
--IC:\Users\Administrator\.platformio\lib\ESPAsyncTCP_ID305\src
--IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266WiFi\src
--IC:\Users\Administrator\.platformio\lib\ESPAsyncTCP_ID305\src
--IC:\Users\Administrator\.platformio\lib\ESPAsyncUDP_ID359\src
--IC:\Users\Administrator\.platformio\lib\ESPAsyncWebServer_ID306\src
--IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266WiFi\src
--IC:\Users\Administrator\.platformio\lib\ESPAsyncTCP_ID305\src
--IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\Hash\src
--IC:\Users\Administrator\.platformio\lib\ESPAsyncWebServer_ID306\src
--IC:\Users\Administrator\.platformio\lib\ESPAsyncWifiManager_ID1438
 -IC:\Users\Administrator\.platformio\lib\ESPManager_ID1480
--IC:\Users\Administrator\.platformio\lib\FauxmoESP_ID1303\src
--IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266WiFi\src
--IC:\Users\Administrator\.platformio\lib\ESPAsyncTCP_ID305\src
--IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\Hash\src
--IC:\Users\Administrator\.platformio\lib\ESPAsyncWebServer_ID306\src
--IC:\Users\Administrator\.platformio\lib\FauxmoESP_ID1303\src
+-IC:\Users\Administrator\.platformio\lib\PubSubClient_ID89\src
 -IC:\Users\Administrator\.platformio\lib\PubSubClient_ID89\src
 -IC:\Users\Administrator\.platformio\lib\RCSwitch_ID246
 -IC:\Users\Administrator\.platformio\lib\RCSwitch_ID246
