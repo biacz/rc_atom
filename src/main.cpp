@@ -1,79 +1,41 @@
-#include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
 #include <PubSubClient.h>
 #include <RCSwitch.h>
-#include <fauxmoESP.h>
 #include <secrets.h>
 
 #define MQTT_VERSION                                MQTT_VERSION_3_1_1
-#define IRB 14
-#define RCPIN 2
 
-const PROGMEM char* mqttClient_ID =                "livingroom_rc";
-const PROGMEM char* MQTT_SENSOR_TOPIC =             "/house/livingroom/sensor_dht";
-const PROGMEM char* MQTT_LIGHT_STATE_TOPIC[] = {    "/house/livingroom/light_left/status", "/house/livingroom/light_right/status", "/house/livingroom/light_center/status" };
-const PROGMEM char* MQTT_LIGHT_COMMAND_TOPIC[] = {  "/house/livingroom/light_left/switch", "/house/livingroom/light_right/switch", "/house/livingroom/light_center/switch" };
-const PROGMEM char* MQTT_MOVEMENT_STATE_TOPIC =     "/house/livingroom/movement/status";
+const char* MQTT_CLIENT_ID =                "livingroom_rc";
+const char* MQTT_SENSOR_TOPIC =             "/house/livingroom/sensor_dht";
+const char* MQTT_LIGHT_STATE_TOPIC[] = {    "/house/livingroom/light_left/status", "/house/livingroom/light_right/status", "/house/livingroom/light_center/status" };
+const char* MQTT_LIGHT_COMMAND_TOPIC[] = {  "/house/livingroom/light_left/switch", "/house/livingroom/light_right/switch", "/house/livingroom/light_center/switch" };
+const char* MQTT_MOVEMENT_STATE_TOPIC =     "/house/livingroom/movement/status";
 
-const char* housecode =                             "11010"; //first 5 dip switches on rc switches
-const char* socketcodes[] = {                       "00010", "00001", "10000" }; //last 5 dip switches on rc switches
+RCSwitch mySwitch = RCSwitch();
+WiFiClient wifiClient;
+PubSubClient mqttClient(wifiClient);
 
+int IRB =                                           14;
+int RCPIN =                                         2;
+int housecode =                                     11010; //first 5 dip switches on rc switches
+int socketcodes[] = {                               00010, 00001, 10000 }; //last 5 dip switches on rc switches
 unsigned long wait = 30000;
 unsigned long wait_off = 120000;
 unsigned long now = millis();
 unsigned long last_millis = 0;
-
 int lastState = LOW;
-
-//initialize classes
-WiFiClient wifiClient;
-PubSubClient mqttClient(wifiClient);
-RCSwitch mySwitch = RCSwitch();
-fauxmoESP fauxmo;
-
-void fauxmoCallback(unsigned char device_id, const char * device_name, bool state) {
-  Serial.printf("[FAUXMO] Device #%d (%s) state: %s\n", device_id, device_name, state ? "1" : "0");
-  mqttClient.publish(MQTT_LIGHT_STATE_TOPIC[device_id], state ? "1" : "0", true);
-
-  int hc_int = atol(housecode);
-  int sc_int = atol(socketcodes[device_id]);
-
-  if (state) {
-    mySwitch.switchOn(hc_int, sc_int);
-  }
-  else {
-    mySwitch.switchOff(hc_int, sc_int);
-  }
-}
-
-void mqttCallback(char* p_topic, byte* p_payload, unsigned int p_length) { //handle mqtt callbacks
-  String payload;
-  for (uint8_t i = 0; i < p_length; i++) { //concatenate payload
-    payload.concat((char)p_payload[i]);
-  }
-
-  for (int i = 0; i < 3; i++) {
-    if (String(MQTT_LIGHT_COMMAND_TOPIC[i]).equals(String(p_topic))) {
-      Serial.print("[MQTT] TOPIC: ");
-      Serial.println(p_topic);
-      Serial.print("[MQTT] PAYLOAD:");
-      Serial.println(payload);
-      fauxmoCallback(i, p_topic, payload != "0");
-    }
-  }
-}
 
 void mqttReconnect() {
   while (!mqttClient.connected()) { //loop until we're reconnected
     Serial.println("[MQTT] INFO: Attempting connection...");
-    if (mqttClient.connect(mqttClient_ID, MQTT_USER, MQTT_PASSWORD)) {
+    if (mqttClient.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD)) {
       Serial.println("[MQTT] INFO: connected");
       for (int i = 0; i < 3; i++) {
         mqttClient.subscribe(MQTT_LIGHT_COMMAND_TOPIC[i]); //subscribe to all light topics
-        Serial.printf("[MQTT] INFO: subscribing to %s\n", MQTT_LIGHT_COMMAND_TOPIC[i]);
+        Serial.print("[MQTT] INFO: subscribing to: ");
+        Serial.println(MQTT_LIGHT_COMMAND_TOPIC[i]);
       }
     } else {
       Serial.print("[MQTT] ERROR: failed, rc=");
@@ -99,11 +61,29 @@ void wifiSetup() {
   Serial.println(WiFi.localIP());
 }
 
-void fauxmoSetup() {
-  fauxmo.addDevice("Licht eins");
-  fauxmo.addDevice("Licht zwei");
-  fauxmo.addDevice("Licht drei");
-  fauxmo.onMessage(fauxmoCallback);
+void mqttCallback(char* p_topic, byte* p_payload, unsigned int p_length) { //handle mqtt callbacks
+  String payload;
+  for (uint8_t i = 0; i < p_length; i++) { //concatenate payload
+    payload.concat((char)p_payload[i]);
+  }
+
+  for (int i = 0; i < 3; i++) {
+    if (String(MQTT_LIGHT_COMMAND_TOPIC[i]).equals(String(p_topic))) {
+      Serial.print("[MQTT] TOPIC: ");
+      Serial.println(p_topic);
+      Serial.print("[MQTT] PAYLOAD:");
+      Serial.println(payload);
+
+      //int socketcode = atol(socketcodes[i]);
+
+      if (payload=="ON") {
+        mySwitch.switchOn(housecode, socketcodes[i]);
+      }
+      else {
+        mySwitch.switchOff(housecode, socketcodes[i]);
+      }
+    }
+  }
 }
 
 void movement(unsigned long now) {
@@ -147,23 +127,18 @@ void setup() {
     else if (error == OTA_END_ERROR) Serial.println("End Failed");
   });
   ArduinoOTA.begin();
-
   mySwitch.enableTransmit(RCPIN); //enable transmit on RCPIN
   wifiSetup();
-  fauxmoSetup();
   mqttClient.setServer(MQTT_SERVER_IP, MQTT_SERVER_PORT);
   mqttClient.setCallback(mqttCallback);
-
 }
 
 void loop() {
   yield();
-  unsigned long now = millis();
+  ArduinoOTA.handle();
   if (!mqttClient.connected()) {
     mqttReconnect();
   }
   mqttClient.loop();
-  fauxmo.handle();
   movement(now);
-  ArduinoOTA.handle();
 }
