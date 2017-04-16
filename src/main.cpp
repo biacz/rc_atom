@@ -21,11 +21,13 @@ int IRB =                                           14;
 int RCPIN =                                         2;
 char* housecode =                                   "11010"; //first 5 dip switches on rc switches
 char* socketcodes[] = {                             "00010", "00001", "10000" }; //last 5 dip switches on rc switches
-unsigned long wait = 30000;
-unsigned long wait_off = 120000;
-unsigned long now = millis();
+unsigned long wait = 60000;
+unsigned long now;
 unsigned long last_millis = 0;
-int lastState = LOW;
+unsigned long lowIn;
+bool lockLow = true;
+bool lockHigh;
+bool takeLowTime;
 
 void mqttReconnect() {
   while (!mqttClient.connected()) { //loop until we're reconnected
@@ -76,30 +78,36 @@ void mqttCallback(char* p_topic, byte* p_payload, unsigned int p_length) { //han
 
       if (payload=="ON") {
         mySwitch.switchOn(housecode, socketcodes[i]);
+        mqttClient.publish(MQTT_LIGHT_STATE_TOPIC[i], "ON", true);
       }
       else {
         mySwitch.switchOff(housecode, socketcodes[i]);
+        mqttClient.publish(MQTT_LIGHT_STATE_TOPIC[i], "OFF", true);
       }
     }
   }
 }
 
-void movement(unsigned long now) {
+void movement() {
   if (digitalRead(IRB) == HIGH) {
-    if (now - last_millis >= wait) {
-      last_millis = now;
+    if (lockLow) {
       mqttClient.publish(MQTT_MOVEMENT_STATE_TOPIC, "ON", true); //publish the state to mqtt
       Serial.println("[SENSOR] INFO: Movement detected!");
+      lockLow = false;
+      delay(50);
+      }
+    takeLowTime = true;
     }
-    lastState = HIGH;
-  }
   if (digitalRead(IRB) == LOW) {
-    if (now - last_millis >= wait_off) {
-      last_millis = now;
+    if (takeLowTime) {
+      lowIn = millis();
+      takeLowTime = false;
+    }
+    if (!lockLow && millis() - lowIn >= wait) {
       mqttClient.publish(MQTT_MOVEMENT_STATE_TOPIC, "OFF", true); //publish the state to mqtt
       Serial.println("[SENSOR] INFO: No more movement detected!");
+      lockLow = true;
     }
-    lastState = LOW;
   }
 }
 
@@ -133,11 +141,10 @@ void setup() {
 
 void loop() {
   yield();
-  unsigned long now = millis();
   ArduinoOTA.handle();
   if (!mqttClient.connected()) {
     mqttReconnect();
   }
   mqttClient.loop();
-  movement(now);
+  movement();
 }
