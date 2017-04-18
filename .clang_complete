@@ -3,10 +3,10 @@
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\cores\esp8266
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\variants\nodemcu
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266WiFi\src
--IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266mDNS
--IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\ArduinoOTA
--IC:\Users\Administrator\.platformio\lib\PubSubClient_ID89\src
 -IC:\Users\Administrator\.platformio\lib\RCSwitch_ID246
+-IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266mDNS
+-IC:\Users\Administrator\.platformio\lib\PubSubClient_ID89\src
+-IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\ArduinoOTA
 -IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\src
 -IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\ArduinoOTA
 -IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\secrets\src
@@ -18,6 +18,7 @@
 -IC:\Users\Administrator\.platformio\lib\PubSubClient_ID89\src
 -IC:\Users\Administrator\.platformio\lib\RCSwitch_ID246
 -IC:\Users\Administrator\.platformio\lib\RCSwitch_ID246
+-IC:\Users\Administrator\.platformio\lib\Ticker_ID1586
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ArduinoOTA
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\DNSServer\src
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\EEPROM

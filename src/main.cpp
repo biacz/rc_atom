@@ -21,9 +21,8 @@ int IRB =                                           14;
 int RCPIN =                                         2;
 char* housecode =                                   "11010"; //first 5 dip switches on rc switches
 char* socketcodes[] = {                             "00010", "00001", "10000" }; //last 5 dip switches on rc switches
-unsigned long wait = 60000;
+unsigned long wait = 300000;
 unsigned long now;
-unsigned long last_millis = 0;
 unsigned long lowIn;
 bool lockLow = true;
 bool lockHigh;
@@ -113,6 +112,7 @@ void movement() {
 
 void setup() {
   Serial.begin(115200);
+  ArduinoOTA.setHostname("rc-livingroom");
   ArduinoOTA.onStart([]() {
     String type;
     type = "sketch";
