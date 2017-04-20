@@ -112,7 +112,7 @@ void movement() {
 
 void setup() {
   Serial.begin(115200);
-  ArduinoOTA.setHostname("rc-livingroom");
+  ArduinoOTA.setHostname(MQTT_CLIENT_ID);
   ArduinoOTA.onStart([]() {
     String type;
     type = "sketch";
