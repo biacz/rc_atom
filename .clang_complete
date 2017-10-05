@@ -2,23 +2,24 @@
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lwip\include
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\cores\esp8266
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\variants\nodemcu
+-IX:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\src
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266WiFi\src
--IC:\Users\Administrator\.platformio\lib\RCSwitch_ID246
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ESP8266mDNS
 -IC:\Users\Administrator\.platformio\lib\PubSubClient_ID89\src
--IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\ArduinoOTA
--IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\src
--IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\ArduinoOTA
--IZ:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\secrets\src
+-IC:\Users\Administrator\.platformio\lib\rc-switch_ID246
+-IX:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\ArduinoOTA
+-IX:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\ArduinoOTA
+-IX:\google_drive\Elektrotechnik\Arduino IDE\rc_atom\lib\secrets
 -IC:\Users\Administrator\.platformio\lib\Adafruit Unified Sensor_ID31
--IC:\Users\Administrator\.platformio\lib\ArduinoJson_ID64
+-IC:\Users\Administrator\.platformio\lib\ArduinoJson_ID64\src
 -IC:\Users\Administrator\.platformio\lib\DHT sensor library_ID19
 -IC:\Users\Administrator\.platformio\lib\ESPManager_ID1480
+-IC:\Users\Administrator\.platformio\lib\IRremoteESP8266_ID1089\src
 -IC:\Users\Administrator\.platformio\lib\PubSubClient_ID89\src
 -IC:\Users\Administrator\.platformio\lib\PubSubClient_ID89\src
--IC:\Users\Administrator\.platformio\lib\RCSwitch_ID246
--IC:\Users\Administrator\.platformio\lib\RCSwitch_ID246
 -IC:\Users\Administrator\.platformio\lib\Ticker_ID1586
+-IC:\Users\Administrator\.platformio\lib\rc-switch_ID246
+-IC:\Users\Administrator\.platformio\lib\rc-switch_ID246
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\ArduinoOTA
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\DNSServer\src
 -IC:\Users\Administrator\.platformio\packages\framework-arduinoespressif8266\libraries\EEPROM
@@ -45,12 +46,13 @@
 -IC:\Users\Administrator\.platformio\packages\toolchain-xtensa\xtensa-lx106-elf\include
 -IC:\Users\Administrator\.platformio\packages\toolchain-xtensa\lib\gcc\xtensa-lx106-elf\4.8.2\include
 -IC:\Users\Administrator\.platformio\packages\toolchain-xtensa\lib\gcc\xtensa-lx106-elf\4.8.2\include-fixed
+-IC:\Users\Administrator\.platformio\packages\tool-unity
 -DARDUINO=20300
 -DLWIP_OPEN_SRC
 -DF_CPU=80000000L
 -D__ets__
 -DICACHE_FLASH
--DPLATFORMIO=30400
+-DPLATFORMIO=30500
 -DESP8266
 -DARDUINO_ARCH_ESP8266
 -DARDUINO_ESP8266_NODEMCU

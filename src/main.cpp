@@ -5,32 +5,24 @@
 #include <RCSwitch.h>
 #include <secrets.h>
 
-#define MQTT_VERSION                                MQTT_VERSION_3_1_1
-
+#define MQTT_VERSION                        MQTT_VERSION_3_1_1
 const char* MQTT_CLIENT_ID =                "livingroom_rc";
 const char* MQTT_SENSOR_TOPIC =             "/house/livingroom/sensor_dht";
 const char* MQTT_LIGHT_STATE_TOPIC[] = {    "/house/livingroom/light_left/status", "/house/livingroom/light_right/status", "/house/livingroom/light_center/status" };
 const char* MQTT_LIGHT_COMMAND_TOPIC[] = {  "/house/livingroom/light_left/switch", "/house/livingroom/light_right/switch", "/house/livingroom/light_center/switch" };
-const char* MQTT_MOVEMENT_STATE_TOPIC =     "/house/livingroom/movement/status";
 
 RCSwitch mySwitch = RCSwitch();
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 
-int IRB =                                           14;
 int RCPIN =                                         2;
 char* housecode =                                   "11010"; //first 5 dip switches on rc switches
 char* socketcodes[] = {                             "00010", "00001", "10000" }; //last 5 dip switches on rc switches
-unsigned long wait = 300000;
-unsigned long now;
-unsigned long lowIn;
-bool lockLow = true;
-bool lockHigh;
-bool takeLowTime;
 
 void mqttReconnect() {
   while (!mqttClient.connected()) { //loop until we're reconnected
-    Serial.println("[MQTT] INFO: Attempting connection...");
+    Serial.print("[MQTT] INFO: Attempting connection to: ");
+    Serial.println(MQTT_SERVER_IP);
     if (mqttClient.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD)) {
       Serial.println("[MQTT] INFO: connected");
       for (int i = 0; i < 3; i++) {
@@ -87,31 +79,7 @@ void mqttCallback(char* p_topic, byte* p_payload, unsigned int p_length) { //han
   }
 }
 
-void movement() {
-  if (digitalRead(IRB) == HIGH) {
-    if (lockLow) {
-      mqttClient.publish(MQTT_MOVEMENT_STATE_TOPIC, "ON", true); //publish the state to mqtt
-      Serial.println("[SENSOR] INFO: Movement detected!");
-      lockLow = false;
-      delay(50);
-      }
-    takeLowTime = true;
-    }
-  if (digitalRead(IRB) == LOW) {
-    if (takeLowTime) {
-      lowIn = millis();
-      takeLowTime = false;
-    }
-    if (!lockLow && millis() - lowIn >= wait) {
-      mqttClient.publish(MQTT_MOVEMENT_STATE_TOPIC, "OFF", true); //publish the state to mqtt
-      Serial.println("[SENSOR] INFO: No more movement detected!");
-      lockLow = true;
-    }
-  }
-}
-
-void setup() {
-  Serial.begin(115200);
+void otaSetup() {
   ArduinoOTA.setHostname(MQTT_CLIENT_ID);
   ArduinoOTA.onStart([]() {
     String type;
@@ -133,7 +101,12 @@ void setup() {
     else if (error == OTA_END_ERROR) Serial.println("End Failed");
   });
   ArduinoOTA.begin();
+}
+
+void setup() {
+  Serial.begin(115200);
   mySwitch.enableTransmit(RCPIN); //enable transmit on RCPIN
+  otaSetup();
   wifiSetup();
   mqttClient.setServer(MQTT_SERVER_IP, MQTT_SERVER_PORT);
   mqttClient.setCallback(mqttCallback);
@@ -146,5 +119,4 @@ void loop() {
     mqttReconnect();
   }
   mqttClient.loop();
-  movement();
 }
